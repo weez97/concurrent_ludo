@@ -28,4 +28,7 @@ El Ludo modificado representa una versión mejorada y ajustada del conocido jueg
 <img width="477" alt="image" src="https://github.com/weez97/concurrent_ludo/assets/38121350/28e0dea6-c8d4-475d-b2fa-9a56e2d0bd2a">
 
 ## Video explicativo del código
-https://youtu.be/8daiG1vD7dI 
+https://youtu.be/sFo4rjC09fE
+
+## Link del repositorio
+https://github.com/weez97/concurrent_ludo
