@@ -13,7 +13,7 @@ El Ludo modificado representa una versión mejorada y ajustada del conocido jueg
 * Creación de canales para coordinar los movimientos de los jugadores de forma asincrónica.
 * Se utiliza un canal "gameOver" para notificar al servidor cuando el juego ha terminado.
 ### Goroutines de los jugadores
-* Cada jugador tiene su propia goroutine que se ejecuta en la función processGame.
+* Cada jugador tiene su propia goroutine que se ejecuta en la función "processGame".
 * La goroutine realiza solicitudes periódicas para obtener el estado del juego y espera a que el juego comience si aún no ha empezado.
 * Se emplea un "sync.WaitGroup" denominado "wg" con el propósito de asegurar que todas las goroutines de los jugadores concluyan antes de que el programa termine su ejecución.
 ### Turno de jugadores
