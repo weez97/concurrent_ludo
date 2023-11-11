@@ -2,6 +2,8 @@
 El Ludo modificado representa una versión mejorada y ajustada del conocido juego de mesa Ludo. En esta variante, los participantes compiten para conducir a sus personajes a lo largo de un laberinto peligroso lleno de obstáculos y desafíos. Cada jugador se enfrenta al desafío de guiar a sus personajes a través del laberinto con el objetivo de llegar a la meta antes que sus oponentes. Los obstáculos añaden un elemento de estrategia al juego. La comunicación entre el servidor y los jugadores se realiza a través de solicitudes HTTP.
 ## Planteamiento
 ### Inicialización del juego y mapa
+* El juego es un juego de tablero simple con un tablero de tamaño "boardSize" (10x10 en este caso).
+* El objetivo del juego es que los jugadores muevan sus piezas desde la posición inicial "0" hasta la casilla final "finalTile".
 * El servidor HTTP se inicia en "http://localhost:8080".
 * El tablero, los obstáculos y el estado del juego se inicializan en la función main.
 * El servidor maneja dos rutas: "/join" para que los jugadores se unan y "/state" para obtener el estado actual del juego.
