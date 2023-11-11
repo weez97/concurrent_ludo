@@ -18,7 +18,7 @@ El Ludo modificado representa una versión mejorada y ajustada del conocido jueg
 * Se emplea un "sync.WaitGroup" denominado "wg" con el propósito de asegurar que todas las goroutines de los jugadores concluyan antes de que el programa termine su ejecución.
 ### Turno de jugadores
 * Los jugadores toman turnos en la función "runGame".
-* Cada jugador realiza su turno llamando a la función "playTurn" en la goroutine correspondiente, esta va a recibir el ID del jugador, sus piezas, el mapa de juego, un canal de movimiento y un sync.WaitGroup.
+* Cada jugador realiza su turno llamando a la función "playTurn" en la goroutine correspondiente.
 * Se recibe el ID del jugador desde el canal de movimiento para iniciar su turno.
 * Si salen dados iguales y hay piezas en la posición de inicio "-1", el jugador mueve una pieza desde el inicio a la posición "0".
 * Se imprime el estado actual de las piezas del jugador para mostrar su progreso.
