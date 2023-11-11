@@ -8,14 +8,12 @@ import (
 )
 
 const (
-	boardSize   = 10
 	numPlayers  = 4
 	finalTile   = 56
 	obstaclePct = 10
 )
 
 var (
-	board       [][]string
 	obstacles   []int
 	currentTurn int
 	pieces      [][]int
@@ -27,11 +25,6 @@ var (
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-
-	board = make([][]string, boardSize)
-	for i := range board {
-		board[i] = make([]string, boardSize)
-	}
 
 	obstacles = placeRandomObstacles(obstaclePct, finalTile)
 
@@ -139,8 +132,6 @@ func placeRandomObstacles(obstacleCount, finalTile int) []int {
 		position := rand.Intn(finalTile)
 		if position != 0 && position != finalTile && !contains(obstacles, position) {
 			obstacles = append(obstacles, position)
-			row, col := position/boardSize, position%boardSize
-			board[row][col] = "X"
 		}
 	}
 
