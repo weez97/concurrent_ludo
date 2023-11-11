@@ -4,136 +4,214 @@ import (
 	"fmt"
 	"math/rand"
 	"sync"
+	"time"
+)
+
+const (
+	boardSize   = 10
+	numPlayers  = 4
+	finalTile   = 56
+	obstaclePct = 10
+)
+
+var (
+	board       [][]string
+	obstacles   []int
+	currentTurn int
+	pieces      [][]int
+	gameOver    bool
+	round       int
+	mutex       sync.Mutex
+	wg          sync.WaitGroup
 )
 
 func main() {
-	// Player initialization
-	players := make([][]int, 4)
-	for i := 0; i < 4; i++ {
-		players[i] = []int{-1, -1, -1, -1}
+	rand.Seed(time.Now().UnixNano())
+
+	board = make([][]string, boardSize)
+	for i := range board {
+		board[i] = make([]string, boardSize)
 	}
 
-	// Map generation
-	var gameMap []int
-	mSize := 57
-	for i := 1; i < mSize; i++ {
-		if rand.Float64() < 1.0/5.0 {
-			gameMap = append(gameMap, 0)
-		} else {
-			gameMap = append(gameMap, 1)
-		}
-	}
+	obstacles = placeRandomObstacles(obstaclePct, finalTile)
 
-	// Game variables initialization
-	won := false
-	c := 0
+	initializePlayers()
 
-	// A channel to coordinate player moves
-	moveChannels := make([]chan []int, 4)
-	for i := 0; i < 4; i++ {
-		moveChannels[i] = make(chan []int)
-		defer close(moveChannels[i])
-	}
-
-	// WaitGroup to handle our concurrency
-	var wg sync.WaitGroup
-
-	// Launch goroutines for each player
-	for i := 0; i < 4; i++ {
+	for i := 0; i < numPlayers; i++ {
 		wg.Add(1)
-		go playGame(i, players[i], gameMap, mSize, moveChannels[i], &wg)
+		go playTurn(i)
 	}
 
-	// Create a WaitGroup to ensure all players finish their turns
-	var playersWG sync.WaitGroup
-
-	// Game loop
-	for !won {
-		c++
-		fmt.Println("\nRonda:", c)
-
-		// Instruct each player to take their turn asynchronously
-		for i := 0; i < 4; i++ {
-			playersWG.Add(1)
-			go func(playerID int) {
-				moveChannels[playerID] <- []int{playerID} // Send the player ID to initiate the turn
-				playersWG.Done()
-			}(i)
-		}
-
-		// Wait for all players to finish their turns
-		playersWG.Wait()
-
-		won = checkWin(players, mSize)
-	}
-
-	fmt.Println("\nFinalizado -", players)
+	wg.Wait()
 }
 
-func playGame(playerID int, player []int, gameMap []int, mSize int, moveChannel chan []int, wg *sync.WaitGroup) {
-	defer wg.Done()
-	for {
-		// Receive the player's ID to initiate the turn
-		turnData := <-moveChannel
-		if turnData[0] != playerID {
-			// Ignore messages not meant for this player
-			continue
+func initializePlayers() {
+	pieces = make([][]int, numPlayers)
+	for i := range pieces {
+		pieces[i] = make([]int, 4)
+		for j := range pieces[i] {
+			pieces[i][j] = -1 // Inicializar todas las piezas en -1
 		}
-
-		roll := []int{rand.Intn(6) + 1, []int{-1, 1}[rand.Intn(2)], rand.Intn(6) + 1}
-
-		if roll[0] == roll[2] && contains(player, -1) {
-			for idx, piece := range player {
-				if piece == -1 {
-					player[idx] = 0
-					break
-				}
-			}
-		} else {
-			move := roll[0] + roll[1]*roll[2]
-			for idx, piece := range player {
-				if piece < mSize && piece >= -1 { // Ensure piece position is never less than -1
-					if piece+move >= mSize-1 {
-						player[idx] = mSize
-						break
-					}
-					if piece+move >= 0 && gameMap[piece+move] == 1 {
-						player[idx] = piece + move
-						break
-					}
-				}
-			}
-		}
-		fmt.Printf("Player %d: %v\n", playerID+1, player)
 	}
 }
 
-func contains(arr []int, value int) bool {
-	for _, item := range arr {
-		if item == value {
-			return true
-		}
-	}
-	return false
-}
-
-func checkWin(players [][]int, mSize int) bool {
-	for _, player := range players {
-		if equal(player, []int{mSize, mSize, mSize, mSize}) {
-			return true
-		}
-	}
-	return false
-}
-
-func equal(a, b []int) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
+func hasWon(playerPieces []int) bool {
+	for _, piece := range playerPieces {
+		if piece != finalTile {
 			return false
 		}
 	}
 	return true
+}
+
+func movePiece(x, y, operation int, playerPieces, obstacles []int) {
+	pieceIndex := -1
+	highestValue := -1
+
+	for index, piece := range playerPieces {
+		if finalTile > piece && piece > highestValue {
+			highestValue = piece
+			pieceIndex = index
+		}
+	}
+
+	if pieceIndex == -1 {
+		return
+	}
+
+	diceSum := x + y
+	if operation == 1 {
+		diceSum = x - y
+	}
+
+	newPosition := playerPieces[pieceIndex] + diceSum
+
+	if playerPieces[pieceIndex] == -1 && newPosition < 0 {
+		fmt.Println("Cannot move before exiting the starting position.")
+		return
+	}
+
+	if !isValidMove(newPosition) {
+		return
+	}
+
+	playerPieces[pieceIndex] = newPosition
+}
+
+func isValidMove(newPosition int) bool {
+	return newPosition <= finalTile && newPosition >= 0
+}
+
+func freePiece(playerPieces []int) {
+	for index, piece := range playerPieces {
+		if piece == -1 {
+			playerPieces[index] = 0
+			return
+		}
+	}
+}
+
+func isDoubles(x, y int) bool {
+	return x == y
+}
+
+func canMove(playerPieces []int) bool {
+	for _, piece := range playerPieces {
+		if piece != -1 && piece != finalTile {
+			return true
+		}
+	}
+	return false
+}
+
+func passTurn() {
+	currentTurn = (currentTurn + 1) % numPlayers
+}
+
+func throwDice() (int, int, int) {
+	return rand.Intn(6) + 1, rand.Intn(6) + 1, rand.Intn(2)
+}
+
+func placeRandomObstacles(obstacleCount, finalTile int) []int {
+	obstacles := make([]int, 0)
+
+	for len(obstacles) < obstacleCount {
+		position := rand.Intn(finalTile)
+		if position != 0 && position != finalTile && !contains(obstacles, position) {
+			obstacles = append(obstacles, position)
+			row, col := position/boardSize, position%boardSize
+			board[row][col] = "X"
+		}
+	}
+
+	return obstacles
+}
+
+func playTurn(playerID int) {
+	defer wg.Done()
+
+	for {
+		mutex.Lock()
+		if gameOver {
+			mutex.Unlock()
+			break
+		}
+
+		if currentTurn == playerID {
+			fmt.Printf("Player %d turn\n", playerID+1)
+			x, y, operation := throwDice()
+			doubles := isDoubles(x, y)
+
+			if doubles {
+				fmt.Printf("Got doubles! First two dice: [%d %d]\n", x, y)
+
+				if canMove(pieces[playerID]) {
+					movePiece(x, y, operation, pieces[playerID], obstacles)
+					fmt.Printf("Dice rolled: [%d %d %d]\n", x, y, operation)
+					fmt.Printf("Player Pieces: %+v\n", pieces[playerID])
+				} else {
+					freePiece(pieces[playerID])
+					movePiece(0, 0, 0, pieces[playerID], obstacles)
+				}
+			} else if canMove(pieces[playerID]) {
+				movePiece(x, y, operation, pieces[playerID], obstacles)
+				fmt.Printf("Dice rolled: [%d %d %d]\n", x, y, operation)
+				fmt.Printf("Player Pieces: %+v\n", pieces[playerID])
+			}
+
+			if hasWon(pieces[playerID]) {
+				gameOver = true
+				doubles = false
+				fmt.Printf("\nPlayer %d won!\n", playerID+1)
+			}
+
+			for doubles && !gameOver {
+				x, y, operation = throwDice()
+				movePiece(x, y, operation, pieces[playerID], obstacles)
+				fmt.Printf("Dice rolled: [%d %d %d]\n", x, y, operation)
+				fmt.Printf("Player Pieces: %+v\n", pieces[playerID])
+				doubles = isDoubles(x, y)
+			}
+
+			passTurn()
+
+			if currentTurn == 0 && !gameOver {
+				round++
+				fmt.Printf("\n--- Round %d ---\n", round)
+				fmt.Printf("Player Positions: %v\n", pieces)
+			}
+		}
+
+		mutex.Unlock()
+		//time.Sleep(100 * time.Millisecond) // Reducir el tiempo de espera entre iteraciones
+	}
+}
+
+func contains(slice []int, element int) bool {
+	for _, e := range slice {
+		if e == element {
+			return true
+		}
+	}
+	return false
 }
