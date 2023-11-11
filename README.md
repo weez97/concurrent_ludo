@@ -7,8 +7,8 @@ El Ludo modificado representa una versión mejorada y ajustada del conocido jueg
 * El servidor maneja dos rutas: "/join" para que los jugadores se unan y "/state" para obtener el estado actual del juego.
 * Los jugadores se unen al juego haciendo una solicitud a "http://localhost:8080/join".
 * Cada jugador tiene su propia goroutine que realiza solicitudes periódicas a "http://localhost:8080/state" para obtener el estado del juego.
-* Se crea la cantidad de jugadores ingresada con 4 piezas cada uno. El estado inicial de cada pieza se establece en '-1'.
-* Se genera el mapa con un 20% de posibilidades de que una de las casillas sea un obstáculo. Cada casilla libre se representa por un 1 y cada casilla con obstáculos con un 0.
+* Se crea la cantidad de jugadores ingresada con N piezas cada uno. El estado inicial de cada pieza se establece en "-1".
+* Se genera el mapa con un 20% de posibilidades de que una de las casillas sea un obstáculo. Cada casilla libre se representa por un "1" y cada casilla con obstáculos con un "0".
 ### Canales
 * Creación de canales para coordinar los movimientos de los jugadores de forma asincrónica.
 * Se utiliza un canal "gameOver" para notificar al servidor cuando el juego ha terminado.
@@ -20,7 +20,7 @@ El Ludo modificado representa una versión mejorada y ajustada del conocido jueg
 * Los jugadores toman turnos en la función "runGame".
 *Cada jugador realiza su turno llamando a la función "playTurn" en la goroutine correspondiente, esta va a recibir el ID del jugador, sus piezas, el mapa de juego, un canal de movimiento y un sync.WaitGroup.
 * Se recibe el ID del jugador desde el canal de movimiento para iniciar su turno.
-* Si salen dados iguales y hay piezas en la posición de inicio (-1), el jugador mueve una pieza desde el inicio a la posición 0.
+* Si salen dados iguales y hay piezas en la posición de inicio "-1", el jugador mueve una pieza desde el inicio a la posición "0".
 * Se imprime el estado actual de las piezas del jugador para mostrar su progreso.
 * Para garantizar la finalización de los turnos se crea un "sync.WaitGroup" llamado "playersWG".
 
