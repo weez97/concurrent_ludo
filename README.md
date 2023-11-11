@@ -25,6 +25,6 @@ El Ludo modificado representa una versión mejorada y ajustada del conocido jueg
 * Si salen dados iguales y hay piezas en la posición de inicio "-1", el jugador mueve una pieza desde el inicio a la posición "0".
 * Se imprime el estado actual de las piezas del jugador para mostrar su progreso.
 * Para garantizar la finalización de los turnos se crea un "sync.WaitGroup" llamado "playersWG".
-<img width="485" alt="image" src="https://github.com/weez97/concurrent_ludo/assets/38121350/ecb304ff-89cc-4d62-835d-260bda72b10d">
+<img width="477" alt="image" src="https://github.com/weez97/concurrent_ludo/assets/38121350/28e0dea6-c8d4-475d-b2fa-9a56e2d0bd2a">
 ## Video explicativo del código
 https://youtu.be/8daiG1vD7dI 
