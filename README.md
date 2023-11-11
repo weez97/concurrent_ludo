@@ -2,16 +2,23 @@
 El Ludo modificado representa una versión mejorada y ajustada del conocido juego de mesa Ludo. En esta variante, los participantes compiten para conducir a sus personajes a lo largo de un laberinto peligroso lleno de obstáculos y desafíos. Cada jugador se enfrenta al desafío de guiar a sus personajes a través del laberinto con el objetivo de llegar a la meta antes que sus oponentes.
 ## Planteamiento
 ### Inicialización del juego y mapa
+* El servidor HTTP se inicia en http://localhost:8080.
+* El tablero, los obstáculos y el estado del juego se inicializan en la función main.
+* El servidor maneja dos rutas: /join para que los jugadores se unan y /state para obtener el estado actual del juego.
+* Los jugadores se unen al juego haciendo una solicitud a http://localhost:8080/join.
+* Cada jugador tiene su propia goroutine que realiza solicitudes periódicas a http://localhost:8080/state para obtener el estado del juego.
 * Se crea la cantidad de jugadores ingresada con 4 piezas cada uno. El estado inicial de cada pieza se establece en '-1'.
 * Se genera el mapa con un 20% de posibilidades de que una de las casillas sea un obstáculo. Cada casilla libre se representa por un 1 y cada casilla con obstáculos con un 0.
 ### Canales
-Creación de canales para coordinar los movimientos de los jugadores de forma asincrónica.
+* Creación de canales para coordinar los movimientos de los jugadores de forma asincrónica.
+* Se utiliza un canal (gameOver) para notificar al servidor cuando el juego ha terminado.
 ### Goroutines de los jugadores
-* Simulan a cada jugador.
-* Ejecuta una función que simula el turno de un jugaor en específico.
-* Se emplea un sync.WaitGroup denominado "wg" con el propósito de asegurar que todas las goroutines de los jugadores concluyan antes de que el programa termine su ejecución.
+* Cada jugador tiene su propia goroutine que se ejecuta en la función processGame.
+* La goroutine realiza solicitudes periódicas para obtener el estado del juego y espera a que el juego comience si aún no ha empezado.
+* * Se emplea un sync.WaitGroup denominado "wg" con el propósito de asegurar que todas las goroutines de los jugadores concluyan antes de que el programa termine su ejecución.
 ### Turno de jugadores
-* La función que va a simular los turnos de un jugador se va a llamar "playGame". Esta va a recibir el ID del jugador, sus piezas, el mapa de juego, un canal de movimiento y un sync.WaitGroup.
+* Los jugadores toman turnos en la función runGame.
+*Cada jugador realiza su turno llamando a la función "playTurn" en la goroutine correspondiente, esta va a recibir el ID del jugador, sus piezas, el mapa de juego, un canal de movimiento y un sync.WaitGroup.
 * Se recibe el ID del jugador desde el canal de movimiento para iniciar su turno.
 * Si salen dados iguales y hay piezas en la posición de inicio (-1), el jugador mueve una pieza desde el inicio a la posición 0.
 * Se imprime el estado actual de las piezas del jugador para mostrar su progreso.
