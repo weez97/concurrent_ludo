@@ -26,5 +26,6 @@ El Ludo modificado representa una versión mejorada y ajustada del conocido jueg
 * Se imprime el estado actual de las piezas del jugador para mostrar su progreso.
 * Para garantizar la finalización de los turnos se crea un "sync.WaitGroup" llamado "playersWG".
 <img width="477" alt="image" src="https://github.com/weez97/concurrent_ludo/assets/38121350/28e0dea6-c8d4-475d-b2fa-9a56e2d0bd2a">
+
 ## Video explicativo del código
 https://youtu.be/8daiG1vD7dI 
